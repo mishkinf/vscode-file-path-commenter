@@ -1,0 +1,77 @@
+{
+  "name": "file-path-commenter",
+  "displayName": "File Path Commenter",
+  "description": "Effortlessly add relative file path comments to the top of your code files with the File Path Commenter extension for Visual Studio Code. This extension is designed to enhance your workflow, especially when leveraging large language models (LLMs) such as ChatGPT, Claude, and other AI assistants to write and manage your code.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.91.0"
+  },
+  "publisher": "mishkinf",
+  "license": "MIT",
+  "categories": [
+    "Other"
+  ],
+  "bugs": {
+    "url": "https://github.com/mishkinf/vscode-file-path-commenter/issues"
+  },
+  "homepage": "https://github.com/mishkinf/vscode-file-path-commenter",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mishkinf/vscode-file-path-commenter.git"
+  },
+  "activationEvents": [
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:python",
+    "onLanguage:html",
+    "onLanguage:css",
+    "onLanguage:shellscript",
+    "onLanguage:java",
+    "onLanguage:c",
+    "onLanguage:cpp",
+    "onLanguage:csharp",
+    "onLanguage:objective-c",
+    "onLanguage:php",
+    "onLanguage:ruby",
+    "onLanguage:perl",
+    "onLanguage:lua"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "filePathCommenter.addRelativePathComment",
+        "title": "Add Relative Path Comment"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "yarn run check-types && yarn run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "yarn run check-types && yarn run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.91.0",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^7.14.1",
+    "@typescript-eslint/parser": "^7.11.0",
+    "eslint": "^8.57.0",
+    "esbuild": "^0.21.5",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.4.5",
+    "@vscode/test-cli": "^0.0.9",
+    "@vscode/test-electron": "^2.4.0"
+  }
+}
