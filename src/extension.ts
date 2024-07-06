@@ -25,7 +25,6 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	// Handle switching between already open tabs
 	context.subscriptions.push(
 		vscode.window.onDidChangeActiveTextEditor((editor) => {
 			if (editor) {
@@ -36,94 +35,127 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
-	// Handle the case when the extension activates and there's already an open text editor
 	if (vscode.window.activeTextEditor) {
 		addRelativePathComment(vscode.window.activeTextEditor.document);
 	}
 }
 
+function isFileInIncludedPaths(filePath: string, workspacePath: string): boolean {
+	const config = vscode.workspace.getConfiguration('filePathCommenter');
+	const includePaths: string[] = config.get('includePaths') || ['src'];
+
+	const relativePath = path.relative(workspacePath, filePath);
+	const result = includePaths.some(includePath => {
+		const normalizedIncludePath = path.normalize(includePath);
+		const normalizedRelativePath = path.normalize(relativePath);
+		return normalizedRelativePath === normalizedIncludePath ||
+			normalizedRelativePath.startsWith(normalizedIncludePath + path.sep);
+	});
+
+	console.log(`File: ${filePath}, Workspace: ${workspacePath}, Include Paths: ${includePaths.join(', ')}, Result: ${result}`);
+	outputChannel.appendLine(`File: ${filePath}, Workspace: ${workspacePath}, Include Paths: ${includePaths.join(', ')}, Result: ${result}`);
+
+	return result;
+}
+
 async function addRelativePathComment(document: vscode.TextDocument) {
+	console.log(`Checking file: ${document.fileName}`);
+	outputChannel.appendLine(`Checking file: ${document.fileName}`);
+
+	const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+	if (!workspaceFolder) {
+		console.log(`No workspace folder found for ${document.fileName}`);
+		outputChannel.appendLine(`No workspace folder found for ${document.fileName}`);
+		return;
+	}
+
+	if (!isFileInIncludedPaths(document.fileName, workspaceFolder.uri.fsPath)) {
+		console.log(`File not in included paths: ${document.fileName}`);
+		outputChannel.appendLine(`File not in included paths: ${document.fileName}`);
+		return;
+	}
+
+	const commentSyntax = getCommentSyntax(document.languageId);
+	if (commentSyntax === null) {
+		console.log(`Unsupported file type: ${document.languageId}`);
+		outputChannel.appendLine(`Unsupported file type: ${document.languageId}`);
+		return;
+	}
+
 	console.log(`Attempting to add/update comment in: ${document.fileName}`);
 	outputChannel.appendLine(`Attempting to add/update comment in: ${document.fileName}`);
 
-	const filePath = document.fileName;
-	const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+	const relativePath = path.relative(workspaceFolder.uri.fsPath, document.fileName);
+	const newComment = commentSyntax + relativePath;
 
-	if (workspaceFolder) {
-		const relativePath = path.relative(workspaceFolder.uri.fsPath, filePath);
-		const newComment = getCommentSyntax(document.languageId) + relativePath;
+	try {
+		const editor = await vscode.window.showTextDocument(document);
+		const firstLine = document.lineAt(0);
+		const secondLine = document.lineCount > 1 ? document.lineAt(1) : null;
 
-		try {
-			const editor = await vscode.window.showTextDocument(document);
-			const firstLine = document.lineAt(0);
-			const secondLine = document.lineCount > 1 ? document.lineAt(1) : null;
+		const existingCommentRegex = new RegExp(`^${escapeRegExp(commentSyntax)}.*`);
 
-			// Check if there's an existing path comment
-			const commentSyntax = getCommentSyntax(document.languageId);
-			const existingCommentRegex = new RegExp(`^${escapeRegExp(commentSyntax)}.*`);
-
-			if (existingCommentRegex.test(firstLine.text)) {
-				// Update existing comment if it's different
-				if (firstLine.text !== newComment) {
-					await editor.edit(editBuilder => {
-						editBuilder.replace(firstLine.range, newComment);
-					});
-					console.log(`Comment updated in ${document.fileName}`);
-					outputChannel.appendLine(`Comment updated in ${document.fileName}`);
-				} else {
-					console.log(`Comment is up to date in ${document.fileName}`);
-					outputChannel.appendLine(`Comment is up to date in ${document.fileName}`);
-				}
-			} else if (secondLine && existingCommentRegex.test(secondLine.text)) {
-				// If the comment is on the second line (e.g., after a shebang), update it
-				if (secondLine.text !== newComment) {
-					await editor.edit(editBuilder => {
-						editBuilder.replace(secondLine.range, newComment);
-					});
-					console.log(`Comment updated on second line in ${document.fileName}`);
-					outputChannel.appendLine(`Comment updated on second line in ${document.fileName}`);
-				} else {
-					console.log(`Comment is up to date in ${document.fileName}`);
-					outputChannel.appendLine(`Comment is up to date in ${document.fileName}`);
-				}
-			} else {
-				// Add new comment if it doesn't exist
+		if (existingCommentRegex.test(firstLine.text)) {
+			if (firstLine.text !== newComment) {
 				await editor.edit(editBuilder => {
-					editBuilder.insert(new vscode.Position(0, 0), newComment + '\n');
+					editBuilder.replace(firstLine.range, newComment);
 				});
-				console.log(`Comment added to ${document.fileName}`);
-				outputChannel.appendLine(`Comment added to ${document.fileName}`);
+				console.log(`Comment updated in ${document.fileName}`);
+				outputChannel.appendLine(`Comment updated in ${document.fileName}`);
+			} else {
+				console.log(`Comment is up to date in ${document.fileName}`);
+				outputChannel.appendLine(`Comment is up to date in ${document.fileName}`);
 			}
-		} catch (error) {
-			console.error(`Error updating comment in ${document.fileName}:`, error);
-			outputChannel.appendLine(`Error updating comment in ${document.fileName}: ${error}`);
+		} else if (secondLine && existingCommentRegex.test(secondLine.text)) {
+			if (secondLine.text !== newComment) {
+				await editor.edit(editBuilder => {
+					editBuilder.replace(secondLine.range, newComment);
+				});
+				console.log(`Comment updated on second line in ${document.fileName}`);
+				outputChannel.appendLine(`Comment updated on second line in ${document.fileName}`);
+			} else {
+				console.log(`Comment is up to date in ${document.fileName}`);
+				outputChannel.appendLine(`Comment is up to date in ${document.fileName}`);
+			}
+		} else {
+			await editor.edit(editBuilder => {
+				editBuilder.insert(new vscode.Position(0, 0), newComment + '\n');
+			});
+			console.log(`Comment added to ${document.fileName}`);
+			outputChannel.appendLine(`Comment added to ${document.fileName}`);
 		}
-	} else {
-		console.log(`No workspace folder found for ${document.fileName}`);
-		outputChannel.appendLine(`No workspace folder found for ${document.fileName}`);
+	} catch (error) {
+		console.error(`Error updating comment in ${document.fileName}:`, error);
+		outputChannel.appendLine(`Error updating comment in ${document.fileName}: ${error}`);
 	}
 }
 
-// Helper function to escape special characters in a string for use in a regex
-function escapeRegExp(string: string) {
-	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-function getCommentSyntax(languageId: string): string {
+function getCommentSyntax(languageId: string): string | null {
 	switch (languageId) {
 		case 'javascript':
+		case 'javascriptreact':
 		case 'typescript':
+		case 'typescriptreact':
 		case 'java':
 		case 'c':
 		case 'cpp':
 		case 'csharp':
 		case 'objective-c':
+		case 'swift':
+		case 'go':
 			return '// ';
 		case 'python':
 		case 'shellscript':
+		case 'yaml':
+		case 'dockerfile':
 			return '# ';
 		case 'html':
+		case 'xml':
+		case 'svg':
 			return '<!-- ';
 		case 'css':
+		case 'scss':
+		case 'less':
 			return '/* ';
 		case 'php':
 			return '// ';
@@ -133,9 +165,17 @@ function getCommentSyntax(languageId: string): string {
 			return '# ';
 		case 'lua':
 			return '-- ';
+		case 'vb':
+			return "' ";
+		case 'sql':
+			return '-- ';
 		default:
-			return '// ';
+			return null; // Return null for unsupported file types
 	}
+}
+
+function escapeRegExp(string: string) {
+	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 export function deactivate() { }

@@ -2,7 +2,7 @@
   "name": "file-path-commenter",
   "displayName": "File Path Commenter",
   "description": "Effortlessly add relative file path comments to the top of your code files with the File Path Commenter extension for Visual Studio Code. This extension is designed to enhance your workflow, especially when leveraging large language models (LLMs) such as ChatGPT, Claude, and other AI assistants to write and manage your code.",
-  "version": "0.0.2",
+  "version": "1.1.0",
   "engines": {
     "vscode": "^1.91.0"
   },
@@ -45,7 +45,20 @@
         "command": "filePathCommenter.addRelativePathComment",
         "title": "Add Relative Path Comment"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "File Path Commenter",
+      "properties": {
+        "filePathCommenter.includePaths": {
+          "type": "array",
+          "default": ["src"],
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of paths to include for file path comments. Paths are relative to the workspace root."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run package",
