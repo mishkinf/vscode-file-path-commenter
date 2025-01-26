@@ -66,5 +66,8 @@ There are no known issues at this time. If you encounter any problems, please op
 1.0.0
 Initial release of File Path Commenter.
 
-1.2.0
+1.1.0
 Added customizable include paths feature.
+
+1.2.0
+Added customizable separator feature.
