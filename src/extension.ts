@@ -76,17 +76,18 @@ async function addRelativePathComment(document: vscode.TextDocument) {
 	}
 
 	const commentSyntax = getCommentSyntax(document.languageId);
-	if (commentSyntax === null) {
-		console.log(`Unsupported file type: ${document.languageId}`);
-		outputChannel.appendLine(`Unsupported file type: ${document.languageId}`);
-		return;
-	}
+    const commentClosingSyntax = getCommentClosingSyntax(document.languageId);
+    if (commentSyntax === null) {
+        console.log(`Unsupported file type: ${document.languageId}`);
+        outputChannel.appendLine(`Unsupported file type: ${document.languageId}`);
+        return;
+    }
 
-	console.log(`Attempting to add/update comment in: ${document.fileName}`);
-	outputChannel.appendLine(`Attempting to add/update comment in: ${document.fileName}`);
+    console.log(`Attempting to add/update comment in: ${document.fileName}`);
+    outputChannel.appendLine(`Attempting to add/update comment in: ${document.fileName}`);
 
-	const relativePath = path.relative(workspaceFolder.uri.fsPath, document.fileName);
-	const newComment = commentSyntax + relativePath;
+    const relativePath = path.relative(workspaceFolder.uri.fsPath, document.fileName);
+    const newComment = `${commentSyntax}${relativePath}${commentClosingSyntax}`;
 
 	try {
 		const editor = await vscode.window.showTextDocument(document);
@@ -129,50 +130,66 @@ async function addRelativePathComment(document: vscode.TextDocument) {
 		outputChannel.appendLine(`Error updating comment in ${document.fileName}: ${error}`);
 	}
 }
-
 function getCommentSyntax(languageId: string): string | null {
-	switch (languageId) {
-		case 'javascript':
-		case 'javascriptreact':
-		case 'typescript':
-		case 'typescriptreact':
-		case 'java':
-		case 'c':
-		case 'cpp':
-		case 'csharp':
-		case 'objective-c':
-		case 'swift':
-		case 'go':
-		case 'dart':
-			return '// ';
-		case 'python':
-		case 'shellscript':
-		case 'yaml':
-		case 'dockerfile':
-			return '# ';
-		case 'html':
-		case 'xml':
-		case 'svg':
-			return '<!-- ';
-		case 'css':
-		case 'scss':
-		case 'less':
-			return '/* ';
-		case 'php':
-			return '// ';
-		case 'ruby':
-			return '# ';
-		case 'perl':
-			return '# ';
-		case 'lua':
-			return '-- ';
-		case 'vb':
-			return "' ";
-		case 'sql':
-			return '-- ';
-		default:
-			return null; // Return null for unsupported file types
-	}
+    switch (languageId) {
+        case 'javascript':
+        case 'javascriptreact':
+        case 'typescript':
+        case 'typescriptreact':
+        case 'java':
+        case 'c':
+        case 'cpp':
+        case 'csharp':
+        case 'objective-c':
+        case 'swift':
+        case 'go':
+        case 'dart':
+            return '// ';
+        case 'python':
+        case 'shellscript':
+        case 'yaml':
+        case 'dockerfile':
+            return '# ';
+        case 'html':
+        case 'xml':
+        case 'svg':
+        case 'svelte':
+            return '<!-- ';
+        case 'css':
+        case 'scss':
+        case 'less':
+            return '/* ';
+        case 'php':
+            return '// ';
+        case 'ruby':
+            return '# ';
+        case 'perl':
+            return '# ';
+        case 'lua':
+            return '-- ';
+        case 'vb':
+            return "' ";
+        case 'sql':
+            return '-- ';
+        default:
+            return null; // Return null for unsupported file types
+    }
+}
+
+function getCommentClosingSyntax(languageId: string): string | null {
+    switch (languageId) {
+        case 'html':
+        case 'xml':
+        case 'svg':
+        case 'svelte':
+            return ' -->';
+        case 'css':
+        case 'scss':
+        case 'less':
+            return ' */';
+        default:
+            return ''; // No closing syntax for single-line comment languages
+    }
 }
 
 function escapeRegExp(string: string) {
