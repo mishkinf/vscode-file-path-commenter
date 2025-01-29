@@ -1,3 +1,4 @@
+// src\extension.ts
 import * as vscode from 'vscode';
 import * as path from 'path';
 
@@ -59,6 +60,7 @@ function isFileInIncludedPaths(filePath: string, workspacePath: string): boolean
 }
 
 async function addRelativePathComment(document: vscode.TextDocument) {
+
 	console.log(`Checking file: ${document.fileName}`);
 	outputChannel.appendLine(`Checking file: ${document.fileName}`);
 
@@ -85,9 +87,29 @@ async function addRelativePathComment(document: vscode.TextDocument) {
 
     console.log(`Attempting to add/update comment in: ${document.fileName}`);
     outputChannel.appendLine(`Attempting to add/update comment in: ${document.fileName}`);
+    
+	const config = vscode.workspace.getConfiguration('filePathCommenter');
+    const pathSeparatorSetting = config.get<string>('pathSeparator') || 'auto';
+    let pathSeparator: string;
 
-    const relativePath = path.relative(workspaceFolder.uri.fsPath, document.fileName);
-    const newComment = `${commentSyntax}${relativePath}${commentClosingSyntax}`;
+	switch (pathSeparatorSetting) {
+        case 'forward':
+            pathSeparator = '/';
+            break;
+        case 'backward':
+            pathSeparator = '\\';
+            break;
+        default: // 'auto'
+            pathSeparator = path.sep; // Use the system's default
+            break;
+    }
+
+	let relativePath = path.relative(workspaceFolder.uri.fsPath, document.fileName);
+
+	if (pathSeparator !== path.sep) {
+		relativePath = relativePath.split(path.sep).join(pathSeparator);
+	}
+	const newComment = `${commentSyntax}${relativePath}${commentClosingSyntax}`;
 
 	try {
 		const editor = await vscode.window.showTextDocument(document);

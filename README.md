@@ -19,7 +19,11 @@ No additional requirements or dependencies are needed for this extension.
 
 This extension contributes the following settings:
 
-- `filePathCommenter.includePaths`: An array of paths to include for file path comments. Paths are relative to the workspace root.
+- `filePathCommenter.includePaths`: (Default: `["src"]`) - An array of paths to include for file path comments. Paths are relative to the workspace root .
+- `filePathCommenter.pathSeparator`: (Default: `"auto"`) - A string to define what separator to use: 
+    - `"auto"` - (use OS separator, `/` for Unix-based systems, `\` for Windows), 
+    - `"forward"` - (`/`)
+    - `"backward"` - (`\`).
 
 By default, only files in the "src" folder will have comments added. You can customize this behavior in your VS Code settings.
 
@@ -36,8 +40,22 @@ By default, only files in the "src" folder will have comments added. You can cus
   "filePathCommenter.includePaths": ["src", "tests", "lib"]
 }
 ```
-
 This configuration will add file path comments to files in the "src", "tests", and "lib" directories and their subdirectories.
+
+### How to Customize Separator
+
+1. Open VS Code Settings (File > Preferences > Settings)
+2. Search for "File Path Commenter"
+3. Find the "Separator" setting
+4. Click on "Edit in settings.json"
+5. Add or modify the `filePathCommenter.pathSeparator` string. For example:
+
+```json
+{
+  "filePathCommenter.pathSeparator": "forward"
+}
+```
+
 
 ## Known Issues
 
@@ -50,3 +68,6 @@ Initial release of File Path Commenter.
 
 1.1.0
 Added customizable include paths feature.
+
+1.2.0
+Added customizable separator feature.
