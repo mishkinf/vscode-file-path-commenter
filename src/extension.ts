@@ -1,4 +1,4 @@
-// src\extension.ts
+// src/extension.ts
 import * as vscode from 'vscode';
 import * as path from 'path';
 
@@ -78,31 +78,31 @@ async function addRelativePathComment(document: vscode.TextDocument) {
 	}
 
 	const commentSyntax = getCommentSyntax(document.languageId);
-    const commentClosingSyntax = getCommentClosingSyntax(document.languageId);
-    if (commentSyntax === null) {
-        console.log(`Unsupported file type: ${document.languageId}`);
-        outputChannel.appendLine(`Unsupported file type: ${document.languageId}`);
-        return;
-    }
+	const commentClosingSyntax = getCommentClosingSyntax(document.languageId);
+	if (commentSyntax === null) {
+		console.log(`Unsupported file type: ${document.languageId}`);
+		outputChannel.appendLine(`Unsupported file type: ${document.languageId}`);
+		return;
+	}
 
-    console.log(`Attempting to add/update comment in: ${document.fileName}`);
-    outputChannel.appendLine(`Attempting to add/update comment in: ${document.fileName}`);
-    
+	console.log(`Attempting to add/update comment in: ${document.fileName}`);
+	outputChannel.appendLine(`Attempting to add/update comment in: ${document.fileName}`);
+
 	const config = vscode.workspace.getConfiguration('filePathCommenter');
-    const pathSeparatorSetting = config.get<string>('pathSeparator') || 'auto';
-    let pathSeparator: string;
+	const pathSeparatorSetting = config.get<string>('pathSeparator') || 'auto';
+	let pathSeparator: string;
 
 	switch (pathSeparatorSetting) {
-        case 'forward':
-            pathSeparator = '/';
-            break;
-        case 'backward':
-            pathSeparator = '\\';
-            break;
-        default: // 'auto'
-            pathSeparator = path.sep; // Use the system's default
-            break;
-    }
+		case 'forward':
+			pathSeparator = '/';
+			break;
+		case 'backward':
+			pathSeparator = '\\';
+			break;
+		default: // 'auto'
+			pathSeparator = path.sep; // Use the system's default
+			break;
+	}
 
 	let relativePath = path.relative(workspaceFolder.uri.fsPath, document.fileName);
 
@@ -153,65 +153,65 @@ async function addRelativePathComment(document: vscode.TextDocument) {
 	}
 }
 function getCommentSyntax(languageId: string): string | null {
-    switch (languageId) {
-        case 'javascript':
-        case 'javascriptreact':
-        case 'typescript':
-        case 'typescriptreact':
-        case 'java':
-        case 'c':
-        case 'cpp':
-        case 'csharp':
-        case 'objective-c':
-        case 'swift':
-        case 'go':
-        case 'dart':
-            return '// ';
-        case 'python':
-        case 'shellscript':
-        case 'yaml':
-        case 'dockerfile':
-            return '# ';
-        case 'html':
-        case 'xml':
-        case 'svg':
-        case 'svelte':
-            return '<!-- ';
-        case 'css':
-        case 'scss':
-        case 'less':
-            return '/* ';
-        case 'php':
-            return '// ';
-        case 'ruby':
-            return '# ';
-        case 'perl':
-            return '# ';
-        case 'lua':
-            return '-- ';
-        case 'vb':
-            return "' ";
-        case 'sql':
-            return '-- ';
-        default:
-            return null; // Return null for unsupported file types
-    }
+	switch (languageId) {
+		case 'javascript':
+		case 'javascriptreact':
+		case 'typescript':
+		case 'typescriptreact':
+		case 'java':
+		case 'c':
+		case 'cpp':
+		case 'csharp':
+		case 'objective-c':
+		case 'swift':
+		case 'go':
+		case 'dart':
+			return '// ';
+		case 'python':
+		case 'shellscript':
+		case 'yaml':
+		case 'dockerfile':
+			return '# ';
+		case 'html':
+		case 'xml':
+		case 'svg':
+		case 'svelte':
+			return '<!-- ';
+		case 'css':
+		case 'scss':
+		case 'less':
+			return '/* ';
+		case 'php':
+			return '// ';
+		case 'ruby':
+			return '# ';
+		case 'perl':
+			return '# ';
+		case 'lua':
+			return '-- ';
+		case 'vb':
+			return "' ";
+		case 'sql':
+			return '-- ';
+		default:
+			return null; // Return null for unsupported file types
+	}
 }
 
 function getCommentClosingSyntax(languageId: string): string | null {
-    switch (languageId) {
-        case 'html':
-        case 'xml':
-        case 'svg':
-        case 'svelte':
-            return ' -->';
-        case 'css':
-        case 'scss':
-        case 'less':
-            return ' */';
-        default:
-            return ''; // No closing syntax for single-line comment languages
-    }
+	switch (languageId) {
+		case 'html':
+		case 'xml':
+		case 'svg':
+		case 'svelte':
+			return ' -->';
+		case 'css':
+		case 'scss':
+		case 'less':
+			return ' */';
+		default:
+			return ''; // No closing syntax for single-line comment languages
+	}
 }
 
 function escapeRegExp(string: string) {
