@@ -20,8 +20,8 @@ No additional requirements or dependencies are needed for this extension.
 This extension contributes the following settings:
 
 - `filePathCommenter.includePaths`: (Default: `["src"]`) - An array of paths to include for file path comments. Paths are relative to the workspace root .
-- `filePathCommenter.pathSeparator`: (Default: `"auto"`) - A string to define what separator to use: 
-    - `"auto"` - (use OS separator, `/` for Unix-based systems, `\` for Windows), 
+- `filePathCommenter.pathSeparator`: (Default: `"auto"`) - A string to define what separator to use:
+    - `"auto"` - (use OS separator, `/` for Unix-based systems, `\` for Windows),
     - `"forward"` - (`/`)
     - `"backward"` - (`\`).
 
@@ -71,3 +71,6 @@ Added customizable include paths feature.
 
 1.2.0
 Added customizable separator feature.
+
+1.4.0
+Added support for Rust
