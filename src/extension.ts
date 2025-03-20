@@ -166,6 +166,7 @@ function getCommentSyntax(languageId: string): string | null {
 		case 'swift':
 		case 'go':
 		case 'dart':
+		case 'rust':	
 			return '// ';
 		case 'python':
 		case 'shellscript':
